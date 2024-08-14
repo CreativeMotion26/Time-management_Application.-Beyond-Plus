@@ -1,4 +1,4 @@
-Dependencies
+**Dependencies**
 
 Review the dependencies and libraries used in the code. Commonly used libraries for this React Native application include:
 
