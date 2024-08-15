@@ -151,15 +151,17 @@ const ScheduleScreen = () => {
       >
         <Text style={styles.headerText}>BEYOND⁺</Text>
         <View style={styles.headerCenter}>
-          <Ionicons name="time" size={24} color="white" />
           <TouchableOpacity onPress={handleDatePress}>
-            <Text style={styles.headerCenterText}>{format(currentDate, 'MMM d yyyy')}</Text>
+            <Text style={styles.headerCenterText}>{format(currentDate, 'MMMM')}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={handleAddPress}>
             <Ionicons name="add" size={28} color="white" />
           </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={handleAccount}>
+          <Ionicons name="person" size={24} color="white" />
+        </TouchableOpacity>
         </View>
         
       </LinearGradient>
@@ -243,12 +245,16 @@ const ScheduleScreen = () => {
           <Text style={styles.navText}>Schedule</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={handleReview}>
+          <Ionicons name="search" size={24} color="white" />
+          <Text style={styles.navText}>Post</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={handleReview}>
           <Ionicons name="book" size={24} color="white" />
           <Text style={styles.navText}>Review</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={handleAccount}>
-          <Ionicons name="person" size={24} color="white" />
-          <Text style={styles.navText}>Account</Text>
+          <Ionicons name="pen" size={24} color="white" />
+          <Text style={styles.navText}>Resume</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity style={styles.fab}>
