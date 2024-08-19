@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert, Modal, TextInput, Button } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, Modal, TextInput, TouchableWithoutFeedback, Keyboard, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import TimeTableView, { genTimeBlock } from 'react-native-timetable';
 import { format } from 'date-fns';
@@ -144,6 +144,7 @@ const ScheduleScreen = () => {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container}>
       <LinearGradient
         colors={['#2b189e', '#5d4add', '#a38ef9']}
@@ -261,6 +262,7 @@ const ScheduleScreen = () => {
         <Ionicons name="share" size={24} color="white" />
       </TouchableOpacity>
     </View>
+    </TouchableWithoutFeedback>
   );
 };
 

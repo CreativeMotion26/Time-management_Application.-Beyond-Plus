@@ -1,18 +1,27 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 
-const reviews = [
-  {
+const initialReviews = [
+{
     id: 1,
+    title: 'Beyond+',
+    user: 'User',
+    review: 'Beyond+ is a React Native application designed to manage and review class schedules, user activities, and settings. It provides a user-friendly interface for selecting times, viewing timetables, and managing user accounts. This project is optimized for efficiency and maintainability, ensuring a smooth user experience.',
+    likes: 0,
+    rating: 5.0,
+    image: '',
+    },
+{
+    id: 3,
     title: 'Design Thinking',
     user: 'Steven',
     review: 'Great class! Highly recommended.',
     likes: 18,
     rating: 4.8,
-    image: 'https://via.placeholder.com/150', // Placeholder image URL
+    image: 'https://via.placeholder.com/150',
   },
   {
     id: 2,
@@ -21,12 +30,14 @@ const reviews = [
     review: 'Very informative but challenging.',
     likes: 12,
     rating: 4.5,
-    image: 'https://via.placeholder.com/150', // Placeholder image URL
+    image: 'https://via.placeholder.com/150', 
   },
-  // Add more reviews as needed
+
 ];
 
 const Review = () => {
+  const [reviews, setReviews] = useState(initialReviews);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
 
   const handleReview = () => {
@@ -40,85 +51,120 @@ const Review = () => {
   };
 
   const handlePost = () => {
-    // Navigate to a posting page or open a modal to create a new post
-    navigation.navigate('Post');
+    navigation.navigate('Post', {
+      addPost: addPost,
+    });
   };
 
+  const addPost = (newPost) => {
+    setReviews([newPost, ...reviews]);
+  };
+
+  const handleViewDetails = (post) => {
+    navigation.navigate('PostDetails', { post });
+  };
+
+  const handleSearch = (text) => {
+    setSearchQuery(text);
+  };
+
+  const filteredReviews = reviews.filter(review => 
+    review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    review.review.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    review.user.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['rgba(43,24,158,1)', 'rgba(93,74,221,1)', 'rgba(163,142,249,1)']}
-        style={styles.header}
-      >
-        <View style={styles.headerTop}>
-          <Text style={styles.headerText}>BEYOND⁺</Text>
-          <Ionicons name="notifications-outline" size={24} color="white" />
-        </View>
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search"
-          placeholderTextColor="#ccc"
-        />
-        <Ionicons name="heart-outline" size={24} color="grey" style={styles.icon} />
-      </LinearGradient>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['rgba(43,24,158,1)', 'rgba(93,74,221,1)', 'rgba(163,142,249,1)']}
+          style={styles.header}
+        >
+          <View style={styles.headerTop}>
+            <Text style={styles.headerText}>BEYOND⁺</Text>
+            <Ionicons name="notifications-outline" size={24} color="white" />
+          </View>
+          <TextInput
+            style={styles.searchBar}
+            placeholder="Search"
+            placeholderTextColor="#ccc"
+            value={searchQuery}
+            onChangeText={handleSearch}
+          />
+          <Text style={styles.headerText}></Text>
+        </LinearGradient>
 
-      <View style={styles.body}>
-      <View style={styles.tabs}>
-          <TouchableOpacity style={styles.tabItem}>
-            <Text style={styles.tabText}>New</Text>
+        <View style={styles.body}>
+          <View style={styles.tabs}>
+            <TouchableOpacity style={styles.tabItem}>
+              <Text style={styles.tabText}>New</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.tabItem}>
+              <Text style={styles.tabText}>Popular</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.tabItem}>
+              <Text style={styles.tabText}>Trending</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.tabItem}>
+              <Text style={styles.tabText}>Reviews</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView contentContainerStyle={styles.content}>
+            {filteredReviews.length > 0 ? (
+              filteredReviews.map((review) => (
+                <TouchableOpacity key={review.id} onPress={() => handleViewDetails(review)}>
+                  <View style={styles.reviewCard}>
+                    <View style={styles.reviewContent}>
+                      <View style={styles.reviewHead}>
+                        <Image source={{ uri: review.image || 'https://via.placeholder.com/150' }} style={styles.profileImage} />
+                        <Text style={styles.reviewUser}> {review.user}</Text>
+                        <Text style={styles.reviewDate}>19-08-2024</Text> 
+                      </View>
+                      <Text style={styles.reviewTitle}>{review.title}</Text>
+                      {review.image && (
+                        <Image source={{ uri: review.image }} style={styles.reviewImage} />
+                      )}
+                      <Text style={styles.reviewText}>{review.review}</Text>
+                      <View style={styles.reviewFooter}>
+                        <View style={styles.rating}>
+                          <Ionicons name="star" size={14} color="gold" />
+                          <Text style={styles.ratingText}>{review.rating}</Text>
+                        </View>
+                        <View style={styles.icons}>
+                          <Ionicons name="heart-outline" size={24} color="grey" style={styles.icon} />
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text style={styles.noResultsText}>No reviews found.</Text>
+            )}
+          </ScrollView>
+        </View>
+
+        <TouchableOpacity style={styles.fab} onPress={handlePost}>
+          <Ionicons name="share" size={24} color="white" />
+        </TouchableOpacity>
+
+        <View style={styles.bottomNav}>
+          <TouchableOpacity style={styles.navItem} onPress={handleMain}>
+            <Ionicons name="calendar" size={24} color="white" />
+            <Text style={styles.navText}>Schedule</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItem}>
-            <Text style={styles.tabText}>Popular</Text>
+          <TouchableOpacity style={styles.navItem} onPress={handleReview}>
+            <Ionicons name="book" size={24} color="white" />
+            <Text style={styles.navText}>Review</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItem}>
-            <Text style={styles.tabText}>Trending</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tabItem}>
-            <Text style={styles.tabText}>Reviews</Text>
+          <TouchableOpacity style={styles.navItem} onPress={handleAccount}>
+            <Ionicons name="person" size={24} color="white" />
+            <Text style={styles.navText}>Account</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView contentContainerStyle={styles.content}>
-          {reviews.map((review) => (
-            <View key={review.id} style={styles.reviewCard}>
-              <Image source={{ uri: review.image }} style={styles.reviewImage} />
-              <View style={styles.reviewContent}>
-                <Text style={styles.reviewTitle}>{review.title}</Text>
-                <Text style={styles.reviewUser}>By: {review.user}</Text>
-                <View style={styles.reviewFooter}>
-                  <View style={styles.rating}>
-                    <Ionicons name="star" size={14} color="gold" />
-                    <Text style={styles.ratingText}>{review.rating}</Text>
-                  </View>
-                  <View style={styles.icons}>
-                    <Ionicons name="heart-outline" size={24} color="grey" style={styles.icon} />
-                    <Ionicons name="play-circle-outline" size={24} color="grey" style={styles.icon} />
-                  </View>
-                </View>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
       </View>
-    
-      <TouchableOpacity style={styles.fab}>
-        <Ionicons name="share" size={24} color="white" />
-      </TouchableOpacity>
-
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={handleMain}>
-          <Ionicons name="calendar" size={24} color="white" />
-          <Text style={styles.navText}>Schedule</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={handleReview}>
-          <Ionicons name="book" size={24} color="white" />
-          <Text style={styles.navText}>Review</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={handleAccount}>
-          <Ionicons name="person" size={24} color="white" />
-          <Text style={styles.navText}>Account</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -136,7 +182,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 25,
-    top: 11
+    top: 11,
   },
   headerText: {
     color: 'white',
@@ -192,11 +238,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
-  reviewImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
+  reviewHead: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 50,
     marginRight: 10,
+  },
+  reviewImage: {
+    width: '100%',
+    height: 250,
+    borderRadius: 10,
+    marginBottom: 18,
   },
   reviewContent: {
     flex: 1,
@@ -204,12 +260,24 @@ const styles = StyleSheet.create({
   reviewTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   reviewUser: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#7B68EE',
+    marginTop: 5,
+  },
+  reviewDate: {
     fontSize: 14,
     color: 'grey',
-    marginBottom: 8,
+    marginTop: 30,
+    marginLeft: -45,
+  },
+  reviewText: {
+    fontSize: 18,
+    marginBottom: 12,
+    color: 'grey',
   },
   reviewFooter: {
     flexDirection: 'row',
@@ -226,37 +294,19 @@ const styles = StyleSheet.create({
   },
   icons: {
     flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
   icon: {
-    marginLeft: 10,
+    marginLeft: 16,
   },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 60,
-    width: '90%',
-    backgroundColor: '#9986FF',
-    borderRadius: 30,
-    //borderTopRightRadius: 20,
-    position: 'absolute',
-    left: 24,
-    right: 0,
-    bottom: 20,
-    shadowColor: '#171717',
-    shadowOffset: {width: -2, height: 4},
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+  noResultsText: {
+    textAlign: 'center',
+    fontSize: 18,
+    marginTop: 20,
+    color: 'grey',
   },
-  navItem: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  navText: {
-    color: 'white',
-    fontSize: 12,
-  },
- fab: {
+  fab: {
     position: 'absolute',
     right: 16,
     bottom: 100,
@@ -270,6 +320,30 @@ const styles = StyleSheet.create({
     shadowOffset: {width: -2, height: 4},
     shadowOpacity: 0.2,
     shadowRadius: 3,
+  },
+  bottomNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    height: 60,
+    backgroundColor: '#9986FF',
+    borderRadius: 30,
+    position: 'absolute',
+    left: 24,
+    right: 24,
+    bottom: 20,
+    shadowColor: '#171717',
+    shadowOffset: { width: -2, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  navItem: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  navText: {
+    color: 'white',
+    fontSize: 12,
   },
 });
 

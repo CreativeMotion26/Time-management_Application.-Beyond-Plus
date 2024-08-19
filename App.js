@@ -11,6 +11,9 @@ import Activity from './Apps/Accounts/Activity';
 import Help from './Apps/Accounts/Help'
 import Settings from './Apps/Accounts/Settings'
 import Resume from './Apps/Resume'
+import Post from './Apps/Post'
+import PostDetails from './Apps/PostDetails';
+
 
 // Create this file similar to Login
 
@@ -50,9 +53,16 @@ const App = () => {
           component={Resume}
           options={{ headerShown: false }}
         />
+        <Stack.Screen 
+          name="PostDetails" 
+          component={PostDetails}
+          options={{ headerShown: false }}  
+         />
         <Stack.Screen name="Activity" component={Activity} />
         <Stack.Screen name="Settings" component={Settings} />
         <Stack.Screen name="Help" component={Help} />
+        <Stack.Screen name="Post" component={Post} />
+        
       </Stack.Navigator>
     </NavigationContainer>
   
