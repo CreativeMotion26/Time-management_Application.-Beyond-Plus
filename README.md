@@ -8,16 +8,16 @@ Beyond+ is a React Native application designed to manage and review class schedu
 
 Review the dependencies and libraries used in the code. Commonly used libraries for this React Native application include:
 
-  * expo install @react-navigation/native
-  * expo install @react-navigation/stack
-  * npm install react-native-modal-datetime-picker
-  * npm install react-native-timetable
-  * expo install react-native-reanimated
-  * expo install react-native-gesture-handler
-  * expo install react-native-screens
-  * expo install react-native-safe-area-context
-  * npm install react-native-vector-icons
-  * npx expo install expo-linear-gradient
-  * expo install expo-image-picker
+    * expo install @react-navigation/native
+    * expo install @react-navigation/stack
+    * npm install react-native-modal-datetime-picker
+    * npm install react-native-timetable
+    * expo install react-native-reanimated
+    * expo install react-native-gesture-handler
+    * expo install react-native-screens
+    * expo install react-native-safe-area-context
+    * npm install react-native-vector-icons
+    * npx expo install expo-linear-gradient
+    * expo install expo-image-picker
 
 ##
