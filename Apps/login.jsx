@@ -17,7 +17,7 @@ const Login = () => {
 
   return (
     <LinearGradient
-      colors={['rgba(43,24,158,1)', 'rgba(93,74,221,1)', 'rgba(163,142,249,1)']}
+      colors={['#2b189e', '#5d4add', '#a38ef9']}
       style={styles.container}
     >
       <View style={styles.logoContainer}>
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 180,
-    height: 100,
+    height: 110,
     marginBottom: 20,
   },
   title: {

@@ -40,6 +40,7 @@ const Review = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
 
+
   const handleReview = () => {
     navigation.navigate('Review');
   };
@@ -53,6 +54,8 @@ const Review = () => {
   const handlePost = () => {
     navigation.navigate('Post', {
       addPost: addPost,
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
     });
   };
 
@@ -78,7 +81,7 @@ const Review = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         <LinearGradient
-          colors={['rgba(43,24,158,1)', 'rgba(93,74,221,1)', 'rgba(163,142,249,1)']}
+          colors={['#2b189e', '#5d4add', '#a38ef9']}
           style={styles.header}
         >
           <View style={styles.headerTop}>
@@ -119,7 +122,7 @@ const Review = () => {
                       <View style={styles.reviewHead}>
                         <Image source={{ uri: review.image || 'https://via.placeholder.com/150' }} style={styles.profileImage} />
                         <Text style={styles.reviewUser}> {review.user}</Text>
-                        <Text style={styles.reviewDate}>19-08-2024</Text> 
+                        <Text style={styles.reviewDate}>{handlePost.date} {handlePost.time}</Text>
                       </View>
                       <Text style={styles.reviewTitle}>{review.title}</Text>
                       {review.image && (
@@ -134,13 +137,17 @@ const Review = () => {
                         <View style={styles.icons}>
                           <Ionicons name="heart-outline" size={24} color="grey" style={styles.icon} />
                         </View>
+                        <View style={styles.commentSection}>
+                            <Ionicons name='chatbubble-outline' size={24} color="grey"/> 
+                            <Text style={styles.commentCount}>0 Comments</Text>
+                        </View>
                       </View>
                     </View>
                   </View>
                 </TouchableOpacity>
               ))
             ) : (
-              <Text style={styles.noResultsText}>No reviews found.</Text>
+              <Text style={styles.noResultsText}>No reviews yet.</Text>
             )}
           </ScrollView>
         </View>
@@ -291,6 +298,17 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 14,
     marginLeft: 4,
+  },
+  commentSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+  },
+  commentCount: {
+    marginleft: 6,
+    paddingLeft: 4,
+    fontSize: 12,
+    color: 'grey',
   },
   icons: {
     flexDirection: 'row',

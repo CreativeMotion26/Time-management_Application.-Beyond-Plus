@@ -15,8 +15,6 @@ import Post from './Apps/Post'
 import PostDetails from './Apps/PostDetails';
 
 
-// Create this file similar to Login
-
 const Stack = createStackNavigator();
 
 const App = () => {

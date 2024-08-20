@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image,} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -15,13 +8,12 @@ const SignIn = ({ navigation }) => {
     <LinearGradient colors={['rgba(43,24,158,1)', 'rgba(93,74,221,1)', 'rgba(163,142,249,1)']} style={styles.container}>
       <View style={styles.logoContainer}>
         <Image source={require('../assets/logo.png')} style={styles.logo} />
-        <Text style={styles.title}>With BEYOND⁺</Text>
       </View>
 
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="S Email"
+          placeholder="Student Email"
           placeholderTextColor="#fff"
           keyboardType="email-address"
         />
@@ -69,7 +61,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 180,
-    height: 100,
+    height: 110,
   },
   title: {
     fontSize: 32,

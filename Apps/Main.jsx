@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert, Modal, TextInput, TouchableWithoutFeedback, Keyboard, Button } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import TimeTableView, { genTimeBlock } from 'react-native-timetable';
-import { format } from 'date-fns';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ProgressBar } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 import { differenceInWeeks } from 'date-fns';
+import { format } from 'date-fns';
 
 // Initial events data
 const initialEvents = [
@@ -96,7 +96,6 @@ const ScheduleScreen = () => {
 
   const handleReview = () => {
     navigation.navigate('Review');
-    setModalVisible(false); // Close the modal before navigating
   };
 
   const handleMain = () => {
@@ -127,7 +126,7 @@ const ScheduleScreen = () => {
         endTime: genTimeBlock(day.toUpperCase(), parseInt(endTime)),
         location,
         extra_descriptions: [],
-        color: '#f8bbd0', // Example color
+        color: '#f8bbd0', // Example colour
       };
       setEvents([...events, newEventObj]);
       setModalVisible(false);
@@ -250,11 +249,11 @@ const ScheduleScreen = () => {
           <Text style={styles.navText}>Post</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={handleReview}>
-          <Ionicons name="book" size={24} color="white" />
+          <Ionicons name="chatbubble" size={24} color="white" />
           <Text style={styles.navText}>Review</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={handleAccount}>
-          <Ionicons name="pen" size={24} color="white" />
+          <Ionicons name="book" size={24} color="white" />
           <Text style={styles.navText}>Resume</Text>
         </TouchableOpacity>
       </View>
