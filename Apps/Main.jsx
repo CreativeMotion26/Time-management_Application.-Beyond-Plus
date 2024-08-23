@@ -32,6 +32,7 @@ const calculateCurrentWeek = (startDate, currentDate) => {
   return Math.ceil(differenceInWeeks(currentDate, startDate) + 1);
 };
 
+
 const CustomHeader = ({ currentDate }) => {
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const datesOfWeek = [];
@@ -80,6 +81,9 @@ const ScheduleScreen = () => {
   const totalWeeks = 12;
   const [selectedEvent, setSelectedEvent] = useState(null);
 
+  const [isEventModalVisible, setEventModalVisible] = useState(false); // State for event details modal visibility
+
+
   useEffect(() => {
     const week = calculateCurrentWeek(semesterStartDate, currentDate);
     setCurrentWeek(week);
@@ -90,7 +94,9 @@ const ScheduleScreen = () => {
   };
 
   const onEventPress = (evt) => {
-    Alert.alert("onEventPress", JSON.stringify(evt));
+    //Alert.alert("onEventPress", JSON.stringify(evt));
+    setSelectedEvent(evt);
+    setEventModalVisible(true);
   };
 
 
@@ -116,6 +122,31 @@ const ScheduleScreen = () => {
     setModalVisible(false);
   };
 
+  const handleCloseEventModal =() => {
+    setEventModalVisible(false);
+    setSelectedEvent(null);
+  }
+  const handleDeleteEvent = () => {
+    Alert.alert(
+      "Delete Event",
+      `Are you sure you want to delete the event "${selectedEvent?.title}"?`,
+        [
+            {
+            text: "Cancel",
+            style: "cancel"
+            },
+            {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => {
+                setEvents(events.filter(event => event !== selectedEvent));
+
+                handleCloseEventModal();
+            }
+            }
+        ]
+        );
+    };
   // Handle submitting the new event
   const handleAddEvent = () => {
     const { title, day, startTime, endTime, location } = newEvent;
@@ -215,6 +246,26 @@ const ScheduleScreen = () => {
           </View>
         </View>
       </Modal>
+      <Modal
+          visible={isEventModalVisible}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={handleCloseEventModal}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{selectedEvent?.title}</Text>
+               <TouchableOpacity style={styles.close} onPress={handleCloseEventModal}>
+                    <Ionicons name="close" size={28} color="black" />
+                </TouchableOpacity>
+              <Text style={styles.modalText}>Subject Code: 41001</Text>
+              <Text style={styles.modalText}>Subject Type: Tutorial</Text>
+              <Text style={styles.modalText}>Location: {selectedEvent?.location}</Text>
+              <Button title="Lecture Review" onPress={handleReview} />
+              <Button title="Delete" onPress={handleDeleteEvent} color="red" />
+            </View>
+          </View>
+        </Modal>
 
 
       <View style={styles.progressContainer}>
@@ -425,7 +476,17 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#7B68EE'
+    color: '#7B68EE',
+    flexDirection: 'row',
+  },
+  close: {
+    marginTop: -45,
+    marginLeft: 270,
+
+  },
+  modalText: {
+    fontSize: 16,
+    marginVertical: 10,
   },
   input: {
     borderWidth: 1,
