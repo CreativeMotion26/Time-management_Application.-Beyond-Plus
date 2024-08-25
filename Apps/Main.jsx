@@ -7,26 +7,10 @@ import { ProgressBar } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { differenceInWeeks } from 'date-fns';
 import { format } from 'date-fns';
+import { Axios } from 'axios';
 
 // Initial events data
-const initialEvents = [
-  {
-    title: "Science",
-    startTime: genTimeBlock("MON", 10),
-    endTime: genTimeBlock("MON", 11, 50),
-    location: "Classroom 403",
-    extra_descriptions: ["Kim", "Lee"],
-    color: "#e1bee7",
-  },
-  {
-    title: "Physics",
-    startTime: genTimeBlock("WED", 12),
-    endTime: genTimeBlock("WED", 12, 50),
-    location: "Lab 404",
-    extra_descriptions: ["Einstein"],
-    color: "#f8bbd0",
-  },
-];
+
 
 const calculateCurrentWeek = (startDate, currentDate) => {
   return Math.ceil(differenceInWeeks(currentDate, startDate) + 1);
@@ -63,7 +47,7 @@ const CustomHeader = ({ currentDate }) => {
 const ScheduleScreen = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
-  const [events, setEvents] = useState(initialEvents); // State for events
+  const [events, setEvents] = useState([]); // State for events
   const [isModalVisible, setModalVisible] = useState(false); // State for modal visibility
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -73,7 +57,7 @@ const ScheduleScreen = () => {
     location: '',
   }); // State for new event details
 
-  const pivotDate = genTimeBlock('mon');
+  const pivotDate = genTimeBlock('Sun');
   const numOfDays = 7;
   const navigation = useNavigation();
   const [currentWeek, setCurrentWeek] = useState(1);
@@ -83,6 +67,20 @@ const ScheduleScreen = () => {
 
   const [isEventModalVisible, setEventModalVisible] = useState(false); // State for event details modal visibility
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/events');
+        const data = await response.json();
+        setEvents(data);
+      } catch (error) {
+        Alert.alert('Error', 'Failed to load events.');
+      }
+    };
+  
+    fetchEvents();
+  }, []);
+  
 
   useEffect(() => {
     const week = calculateCurrentWeek(semesterStartDate, currentDate);
@@ -97,6 +95,7 @@ const ScheduleScreen = () => {
     //Alert.alert("onEventPress", JSON.stringify(evt));
     setSelectedEvent(evt);
     setEventModalVisible(true);
+
   };
 
 
@@ -138,38 +137,71 @@ const ScheduleScreen = () => {
             {
             text: "Delete",
             style: "destructive",
-            onPress: () => {
-                setEvents(events.filter(event => event !== selectedEvent));
-
-                handleCloseEventModal();
+            onPress: async () => {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/events/${selectedEvent.id}`, {
+                      method: 'DELETE',
+                    });
+        
+                    if (response.ok) {
+                      setEvents(events.filter(event => event.id !== selectedEvent.id));
+                      handleCloseEventModal();
+                    } else {
+                      Alert.alert('Error', 'Failed to delete event.');
+                    }
+                  } catch (error) {
+                    Alert.alert('Error', 'Something went wrong. Please try again.');
+                  }
             }
             }
         ]
         );
     };
   // Handle submitting the new event
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
     const { title, day, startTime, endTime, location } = newEvent;
     if (title && day && startTime && endTime && location) {
       const newEventObj = {
         title,
-        startTime: genTimeBlock(day.toUpperCase(), parseInt(startTime)),
-        endTime: genTimeBlock(day.toUpperCase(), parseInt(endTime)),
+        day: day.toUpperCase(),
+        startTime: parseInt(startTime),
+        endTime: parseInt(endTime),
         location,
         extra_descriptions: [],
-        color: '#f8bbd0', // Example colour
+        color: '#f8bbd0', // Example color
       };
-      setEvents([...events, newEventObj]);
-      setModalVisible(false);
-      setNewEvent({
-        title: '',
-        day: '',
-        startTime: '',
-        endTime: '',
-        location: '',
-      });
+  
+      try {
+        // Make a POST request to your backend to store the event in the database
+        const response = await fetch('http://localhost:3000/api/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newEventObj),
+        });
+  
+        if (response.ok) {
+          // If the request was successful, add the event to the local state as well
+          setEvents([...events, newEventObj]);
+          setModalVisible(false);
+          setNewEvent({
+            title: '',
+            day: '',
+            startTime: '',
+            endTime: '',
+            location: '',
+          });
+        } else {
+          // Handle error responses
+          Alert.alert('Error', 'Failed to add event. Please try again.');
+        }
+      } catch (error) {
+        // Handle network or other errors
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+      }
     } else {
-      Alert.alert("Error", "Please fill in all fields.");
+      Alert.alert('Error', 'Please fill in all fields.');
     }
   };
 
