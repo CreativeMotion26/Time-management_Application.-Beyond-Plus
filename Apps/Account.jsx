@@ -23,17 +23,6 @@ const Account = () => {
     navigation.navigate('Login');
   };
 
-  const handleReview = () => {
-    navigation.navigate('Review');
-  };
-
-  const handleMain = () => {
-    navigation.navigate('Main');
-  };
-
-  const handleAccount = () => {
-    navigation.navigate('Acc');
-  };
 
   return (
     <View style={styles.container}>
@@ -63,8 +52,8 @@ const Account = () => {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
-          <Ionicons name="card-outline" size={24} color="#7B68EE" />
-          <Text style={styles.menuText}>Payment</Text>
+          <Ionicons name="star-outline" size={24} color="#7B68EE" />
+          <Text style={styles.menuText}>Saved Posts</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuItem} onPress={handleHelp}>
@@ -90,20 +79,27 @@ const Account = () => {
       </View>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={handleMain}>
-          <Ionicons name="calendar" size={24} color="white" />
-          <Text style={styles.navText}>Schedule</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={handleReview}>
-          <Ionicons name="book" size={24} color="white" />
-          <Text style={styles.navText}>Review</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={handleAccount}>
-          <Ionicons name="person" size={24} color="white" />
-          <Text style={styles.navText}>Account</Text>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Main')}>
+            <Ionicons name="calendar" size={24} color="white" />
+            <Text style={styles.navText}>Schedule</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
+            <Ionicons name="search" size={24} color="white" />
+            <Text style={styles.navText}>Post</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
+            <Ionicons name="chatbubble" size={24} color="white" />
+            <Text style={styles.navText}>Review</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Resume')}>
+            <Ionicons name="book" size={24} color="white" />
+            <Text style={styles.navText}>Resume</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity style={styles.fab}>
+          <Ionicons name="share" size={24} color="white" />
         </TouchableOpacity>
       </View>
-    </View>
   );
 };
 

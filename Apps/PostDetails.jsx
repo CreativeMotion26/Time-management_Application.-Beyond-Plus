@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, FlatList } 
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const PostDetails = ({ route }) => {
   const { post } = route.params;
@@ -38,6 +39,7 @@ const PostDetails = ({ route }) => {
         </View>
       </LinearGradient>
 
+      <ScrollView>
       <TouchableOpacity style={styles.backButton} onPress={handleBack}>
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
@@ -95,7 +97,9 @@ const PostDetails = ({ route }) => {
           
         </View>
       </View>
+      </ScrollView>
     </View>
+    
   );
 };
 
@@ -106,7 +110,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 16,
-    paddingTop: 20,
+    paddingTop: 10,
     paddingBottom: 30,
   },
   headerTop: {

@@ -23,9 +23,27 @@ const SignIn = ({ navigation }) => {
           placeholderTextColor="#fff"
           secureTextEntry
         />
+        <TextInput
+          style={styles.input}
+          placeholder="Name of University"
+          placeholderTextColor="#fff"
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Degree"
+          placeholderTextColor="#fff"
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Major"
+          placeholderTextColor="#fff"
+          secureTextEntry
+        />
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Main')}>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
         <Text style={styles.buttonText}>Sign In</Text>
       </TouchableOpacity>
 

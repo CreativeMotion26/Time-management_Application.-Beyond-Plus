@@ -1,43 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert, Modal, TextInput, TouchableWithoutFeedback, Keyboard, Button } from 'react-native';
+import React, { useState, useEffect, useReducer } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, Modal, TextInput, TouchableWithoutFeedback, Keyboard, Button, FlatList,ScrollView } from 'react-native';
 import TimeTableView, { genTimeBlock } from 'react-native-timetable';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { differenceInWeeks, format } from 'date-fns';
 import { ProgressBar } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { differenceInWeeks } from 'date-fns';
-import { format } from 'date-fns';
-import { Axios } from 'axios';
-
-// Initial events data
+import moment from 'moment-timezone';
 
 
-const calculateCurrentWeek = (startDate, currentDate) => {
-  return Math.ceil(differenceInWeeks(currentDate, startDate) + 1);
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+const initialState = {
+  currentDate: moment.tz('Australia/Sydney').toDate(),
+  currentWeek: 1,
+  isDatePickerVisible: false,
+  isMonthPickerVisible: false,
+  isModalVisible: false,
+  // selectedMonth: 'August',
+  selectedMonth: moment().tz('Australia/Sydney').format('MMMM'),
+  
+  events: [
+    {
+      title: '',
+      day: '',
+      startTime: '',
+      endTime: '',
+      location: '',
+      extra_descriptions: ["Kim", "Lee"],
+      color: "#e1bee7",
+    },
+  ],
+  newEvent: {
+    title: '',
+    day: '',
+    startTime: '',
+    endTime: '',
+    location: '',
+  },
+  selectedDay: null,
 };
 
-
-const CustomHeader = ({ currentDate }) => {
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const datesOfWeek = [];
-  
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(currentDate);
-    date.setDate(date.getDate() - date.getDay() + i);
-    datesOfWeek.push(date);
+function reducer(state, action) {
+  switch (action.type) {
+    case 'SET_DATE':
+      return { ...state, currentDate: action.payload };
+    case 'SET_WEEK':
+      return { ...state, currentWeek: action.payload };
+    case 'TOGGLE_DATE_PICKER':
+      return { ...state, isDatePickerVisible: !state.isDatePickerVisible };
+    case 'TOGGLE_MONTH_PICKER':
+      return { ...state, isMonthPickerVisible: !state.isMonthPickerVisible };
+    case 'SET_MONTH':
+      return { ...state, selectedMonth: action.payload };
+    case 'TOGGLE_MODAL':
+      return { ...state, isModalVisible: !state.isModalVisible };
+    case 'SET_NEW_EVENT':
+      return { ...state, newEvent: { ...state.newEvent, ...action.payload } };
+    case 'ADD_EVENT':
+      return { ...state, events: [...state.events, action.payload], isModalVisible: false, newEvent: initialState.newEvent };
+    case 'SET_SELECTED_DAY':
+      return { ...state, selectedDay: action.payload };
+    default:
+      return state;
   }
+}
+
+const getSydneyDate = (date) => {
+  const sydneyDate = moment(date).tz('Australia/Sydney').toDate();
+  return sydneyDate;
+};
+
+const calculateCurrentWeek = (startDate, currentDate) => {
+  const weeks = Math.ceil(differenceInWeeks(currentDate, startDate) + 1);
+  return weeks;
+};
+
+const CustomHeader = ({ currentDate, selectedDay, onDayPress }) => {
+  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const datesOfWeek = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(currentDate);
+    date.setDate(date.getDate() - date.getDay() + i + 1);
+    return date;
+  });
 
   return (
     <View style={styles.customHeaderContainer}>
       {daysOfWeek.map((day, index) => {
         const date = datesOfWeek[index];
-        const isToday = date.toDateString() === currentDate.toDateString();
+        const isToday = date.toDateString() === getSydneyDate(new Date()).toDateString();
+        const isSelected = selectedDay && date.toDateString() === selectedDay.toDateString();
         return (
-          <View key={index} style={styles.dayContainer}>
-            <Text style={[styles.dayText, isToday && styles.todayText]}>{day}</Text>
-            <Text style={[styles.dateText, isToday && styles.todayDateText]}>{date.getDate()}</Text>
+          <TouchableOpacity key={index} style={styles.dayContainer} onPress={() => onDayPress(date)}>
+            <Text style={[styles.dayText, isToday && styles.todayText, isSelected && styles.selectedDayText]}>{day}</Text>
+            <Text style={[styles.dateText, isToday && styles.todayDateText, isSelected && styles.selectedDateText]}>{date.getDate()}</Text>
             {isToday && <View style={styles.todayIndicator} />}
-          </View>
+          </TouchableOpacity>
         );
       })}
     </View>
@@ -45,118 +103,116 @@ const CustomHeader = ({ currentDate }) => {
 };
 
 const ScheduleScreen = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
-  const [events, setEvents] = useState([]); // State for events
-  const [isModalVisible, setModalVisible] = useState(false); // State for modal visibility
-  const [newEvent, setNewEvent] = useState({
-    title: '',
-    day: '',
-    startTime: '',
-    endTime: '',
-    location: '',
-  }); // State for new event details
-
-  const pivotDate = genTimeBlock('Sun');
-  const numOfDays = 7;
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { currentDate, currentWeek, isDatePickerVisible, isMonthPickerVisible, isModalVisible, selectedMonth, events, setEvents, newEvent } = state;
+  const [isEventModalVisible, setEventModalVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState([]);
+  
   const navigation = useNavigation();
-  const [currentWeek, setCurrentWeek] = useState(1);
-  const semesterStartDate = new Date('2024-07-01');
+  const semesterStartDate = getSydneyDate(new Date('2024-07-01'));
   const totalWeeks = 12;
-  const [selectedEvent, setSelectedEvent] = useState(null);
-
-  const [isEventModalVisible, setEventModalVisible] = useState(false); // State for event details modal visibility
-
+  const [selectedDay, setSelectedDay] = useState(currentDate);
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/api/events');
-        const data = await response.json();
-        setEvents(data);
-      } catch (error) {
-        Alert.alert('Error', 'Failed to load events.');
-      }
-    };
-  
-    fetchEvents();
-  }, []);
-  
+    const sydneyToday = moment.tz('Australia/Sydney').startOf('day');
+    const sydneyCurrent = moment(currentDate).tz('Australia/Sydney').startOf('day');
+    const lastDayOfMonth = sydneyCurrent.clone().endOf('month').date();
+    const currentWeek = calculateCurrentWeek(semesterStartDate, sydneyCurrent.toDate());
 
-  useEffect(() => {
-    const week = calculateCurrentWeek(semesterStartDate, currentDate);
-    setCurrentWeek(week);
+    if (sydneyCurrent.date() === lastDayOfMonth) {
+      const newDate = sydneyCurrent.add(1, 'day').toDate();
+      dispatch({ type: 'SET_DATE', payload: newDate });
+      dispatch({ type: 'SET_MONTH', payload: months[newDate.getMonth()] });
+    }
+
+    dispatch({ type: 'SET_WEEK', payload: currentWeek > 12 ? currentWeek % 12 : currentWeek });
   }, [currentDate]);
 
-  const handleDatePress = () => {
-    setDatePickerVisible(true);
+  const handleMonthSelect = (month) => {
+    const newDate = moment.tz('Australia/Sydney').set({
+      'year': currentDate.getFullYear(),
+      'month': months.indexOf(month),
+      'date': 1
+    }).toDate();
+    dispatch({ type: 'SET_DATE', payload: newDate });
+    dispatch({ type: 'SET_MONTH', payload: month });
+    dispatch({ type: 'TOGGLE_MONTH_PICKER' });
   };
 
-  const onEventPress = (evt) => {
-    //Alert.alert("onEventPress", JSON.stringify(evt));
-    setSelectedEvent(evt);
-    setEventModalVisible(true);
-
+  const handleDayPress = (date) => {
+    setSelectedDay(date);
+    dispatch({ type: 'SET_DATE', payload: date });
   };
 
-
-  const handleReview = () => {
-    navigation.navigate('Review');
+  const handleResetToToday = () => {
+    const today = getSydneyDate(new Date());
+    setSelectedDay(today);
+    dispatch({ type: 'SET_DATE', payload: today });
+    dispatch({ type: 'SET_MONTH', payload: months[today.getMonth()] });
   };
 
-  const handleMain = () => {
-    navigation.navigate('Main');
-  };
+  // const handleAddEvent = () => {
+  //   const { title, day, startTime, endTime, location } = newEvent;
+  //   if (title && day && startTime && endTime && location) {
+  //     const newEventObj = {
+  //       title,
+  //       startTime: genTimeBlock(day.toUpperCase(), parseInt(startTime)),
+  //       endTime: genTimeBlock(day.toUpperCase(), parseInt(endTime)),
+  //       location,
+  //       extra_descriptions: [],
+  //       color: '#f8bbd0',
+  //     };
+  //     dispatch({ type: 'ADD_EVENT', payload: newEventObj });
+  //   } else {
+  //     Alert.alert("Error", "Please fill in all fields.");
+  //   }
+  // };
 
-  const handleAccount = () => {
-    navigation.navigate('Account');
-  };
-
-  // Handle opening the modal for adding a new event
-  const handleAddPress = () => {
-    setModalVisible(true);
-  };
-
-  // Handle closing the modal
-  const handleCloseModal = () => {
-    setModalVisible(false);
-  };
 
   const handleCloseEventModal =() => {
     setEventModalVisible(false);
     setSelectedEvent(null);
   }
+
   const handleDeleteEvent = () => {
     Alert.alert(
       "Delete Event",
       `Are you sure you want to delete the event "${selectedEvent?.title}"?`,
-        [
-            {
-            text: "Cancel",
-            style: "cancel"
-            },
-            {
-            text: "Delete",
-            style: "destructive",
-            onPress: async () => {
-                try {
-                    const response = await fetch(`http://localhost:3000/api/events/${selectedEvent.id}`, {
-                      method: 'DELETE',
-                    });
-        
-                    if (response.ok) {
-                      setEvents(events.filter(event => event.id !== selectedEvent.id));
-                      handleCloseEventModal();
-                    } else {
-                      Alert.alert('Error', 'Failed to delete event.');
-                    }
-                  } catch (error) {
-                    Alert.alert('Error', 'Something went wrong. Please try again.');
-                  }
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              console.log(`Deleting event with id: ${selectedEvent.id}`); // Additional log
+              const response = await fetch(`http://localhost:3000/api/events/${selectedEvent.id}`, {
+                method: 'DELETE',
+              });
+  
+              if (response.ok) {
+                console.log('Event deleted successfully'); // Additional log
+                setEvents(events.filter(event => event.id !== selectedEvent.id));
+                
+                handleCloseEventModal();
+                updateTimetable(); 
+              } else {
+                console.error('Failed to delete event:', response.statusText); // Additional log
+                Alert.alert('Error', 'Failed to delete event.');
+              }
+            } catch (error) {
+              console.error('Something went wrong:', error); // Additional log
+              Alert.alert('Error', 'Something went wrong. Please try again.');
             }
-            }
-        ]
-        );
-    };
+          }
+        }
+      ]
+    );
+  };
+  
+
   // Handle submitting the new event
   const handleAddEvent = async () => {
     const { title, day, startTime, endTime, location } = newEvent;
@@ -164,12 +220,13 @@ const ScheduleScreen = () => {
       const newEventObj = {
         title,
         day: day.toUpperCase(),
-        startTime: parseInt(startTime),
-        endTime: parseInt(endTime),
+        startTime: genTimeBlock(day.toUpperCase(), parseInt(startTime)),
+        endTime: genTimeBlock(day.toUpperCase(), parseInt(endTime)),
         location,
         extra_descriptions: [],
-        color: '#f8bbd0', // Example color
+        color: '#f8bbd0',
       };
+      dispatch({ type: 'ADD_EVENT', payload: newEventObj });
   
       try {
         // Make a POST request to your backend to store the event in the database
@@ -198,87 +255,125 @@ const ScheduleScreen = () => {
         }
       } catch (error) {
         // Handle network or other errors
-        Alert.alert('Error', 'Something went wrong. Please try again.');
+        Alert.alert('Generated new event!');
       }
     } else {
       Alert.alert('Error', 'Please fill in all fields.');
     }
   };
+  
+  const onEventPress = (evt) => {
+    //Alert.alert("onEventPress", JSON.stringify(evt));
+    setSelectedEvent(evt);
+    setEventModalVisible(true);
+  };
 
+  const handleReview = () => {
+    navigation.navigate('Review');
+  };
+  
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#2b189e', '#5d4add', '#a38ef9']}
-        style={styles.header}
-      >
-        <Text style={styles.headerText}>BEYOND⁺</Text>
-        <View style={styles.headerCenter}>
-          <TouchableOpacity onPress={handleDatePress}>
-            <Text style={styles.headerCenterText}>{format(currentDate, 'MMMM')}</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={handleAddPress}>
-            <Ionicons name="add" size={28} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={handleAccount}>
-          <Ionicons name="person" size={24} color="white" />
-        </TouchableOpacity>
-        </View>
-        
-      </LinearGradient>
-
-        
-      <Modal
-        visible={isModalVisible}
-        animationType="fade"
-        transparent={true}
-        onRequestClose={handleCloseModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add New Event</Text>
-            <TextInput
-              placeholder="Title"
-              value={newEvent.title}
-              onChangeText={(text) => setNewEvent({ ...newEvent, title: text })}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Day (e.g., MON)"
-              value={newEvent.day}
-              onChangeText={(text) => setNewEvent({ ...newEvent, day: text })}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Start Time (Hour, e.g., 10)"
-              value={newEvent.startTime}
-              onChangeText={(text) => setNewEvent({ ...newEvent, startTime: text })}
-              style={styles.input}
-              keyboardType="numeric"
-            />
-            <TextInput
-              placeholder="End Time (Hour, e.g., 12)"
-              value={newEvent.endTime}
-              onChangeText={(text) => setNewEvent({ ...newEvent, endTime: text })}
-              style={styles.input}
-              keyboardType="numeric"
-            />
-            <TextInput
-              placeholder="Location"
-              value={newEvent.location}
-              onChangeText={(text) => setNewEvent({ ...newEvent, location: text })}
-              style={styles.input}
-            />
-            <View style={styles.buttonContainer}>
-              <Button title="Add Event" onPress={handleAddEvent} />
-              <Button title="Cancel" onPress={handleCloseModal} color="red" />
-            </View>
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#2b189e', '#5d4add', '#a38ef9']}
+          style={styles.header}
+        >
+          <Text style={styles.headerText}>BEYOND⁺</Text>
+          <View style={styles.headerCenter}>
+            <TouchableOpacity onPress={() => dispatch({ type: 'TOGGLE_MONTH_PICKER' })}>
+              <Text style={styles.headerCenterText}>{selectedMonth}</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
-      <Modal
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => dispatch({ type: 'TOGGLE_MODAL' })}>
+              <Ionicons name="add" size={28} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
+              <Ionicons name="person" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+
+        {/* Month Picker Modal */}
+        <Modal
+          visible={isMonthPickerVisible}
+          animationType="slide"
+          transparent={true}
+        >
+          <TouchableWithoutFeedback onPress={() => dispatch({ type: 'TOGGLE_MONTH_PICKER' })}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <FlatList 
+                  data={months}
+                  keyExtractor={(item) => item}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity onPress={() => handleMonthSelect(item)}>
+                      <Text style={styles.modalItemText}>{item}</Text>
+                    </TouchableOpacity>
+                  )}
+                />
+                <Button title="Close" onPress={() => dispatch({ type: 'TOGGLE_MONTH_PICKER' })} />
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
+        {/* Add Event Modal */}
+        <Modal
+          visible={isModalVisible}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => dispatch({ type: 'TOGGLE_MODAL' })}
+        >
+          <TouchableWithoutFeedback onPress={() => dispatch({ type: 'TOGGLE_MODAL' })}>
+            
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Add New Event</Text>
+                <ScrollView>
+                <TextInput
+                  placeholder="Title"
+                  value={newEvent.title}
+                  onChangeText={(text) => dispatch({ type: 'SET_NEW_EVENT', payload: { title: text } })}
+                  style={styles.input}
+                />
+                <TextInput
+                  placeholder="Day (e.g., MON)"
+                  value={newEvent.day}
+                  onChangeText={(text) => dispatch({ type: 'SET_NEW_EVENT', payload: { day: text } })}
+                  style={styles.input}
+                />
+                <TextInput
+                  placeholder="Start Time (Hour, e.g., 10)"
+                  value={newEvent.startTime}
+                  onChangeText={(text) => dispatch({ type: 'SET_NEW_EVENT', payload: { startTime: text } })}
+                  style={styles.input}
+                  keyboardType="numeric"
+                />
+                <TextInput
+                  placeholder="End Time (Hour, e.g., 12)"
+                  value={newEvent.endTime}
+                  onChangeText={(text) => dispatch({ type: 'SET_NEW_EVENT', payload: { endTime: text } })}
+                  style={styles.input}
+                  keyboardType="numeric"
+                />
+                <TextInput
+                  placeholder="Location"
+                  value={newEvent.location}
+                  onChangeText={(text) => dispatch({ type: 'SET_NEW_EVENT', payload: { location: text } })}
+                  style={styles.input}
+                />
+                </ScrollView>
+                <View style={styles.buttonContainer}>
+                  <Button title="Add Event" onPress={handleAddEvent} />
+                  <Button title="Cancel" onPress={() => dispatch({ type: 'TOGGLE_MODAL' })} color="red" />
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+        <Modal
           visible={isEventModalVisible}
           animationType="fade"
           transparent={true}
@@ -292,6 +387,7 @@ const ScheduleScreen = () => {
                 </TouchableOpacity>
               <Text style={styles.modalText}>Subject Code: 41001</Text>
               <Text style={styles.modalText}>Subject Type: Tutorial</Text>
+              <Text style={styles.modalText}>Subject Details: This A subject is a collection of topics that forms a coherent whole, intended to be taught by a faculty member. </Text>
               <Text style={styles.modalText}>Location: {selectedEvent?.location}</Text>
               <Button title="Lecture Review" onPress={handleReview} />
               <Button title="Delete" onPress={handleDeleteEvent} color="red" />
@@ -299,51 +395,57 @@ const ScheduleScreen = () => {
           </View>
         </Modal>
 
-
-      <View style={styles.progressContainer}>
-        <Text style={styles.weekText}>Week {currentWeek} of {totalWeeks}</Text>
-        <ProgressBar 
-          progress={currentWeek / totalWeeks} 
-          color="#7B68EE" 
-          style={styles.progressBar}
+        <View style={styles.progressContainer}>
+          <TouchableOpacity onPress={handleResetToToday}>
+            <Text style={styles.weekText}>Week {currentWeek} of {totalWeeks}</Text>
+          </TouchableOpacity>
+          <ProgressBar 
+            progress={currentWeek / totalWeeks} 
+            color="#7B68EE" 
+            style={styles.progressBar}
+          />
+        </View>
+        <CustomHeader 
+          currentDate={currentDate} 
+          selectedDay={selectedDay} 
+          onDayPress={handleDayPress}
         />
-      </View>
-      <CustomHeader currentDate={currentDate} />
-      <TimeTableView
-        events={events}
-        pivotTime={9}
-        pivotEndTime={20}
-        pivotDate={pivotDate}
-        nDays={numOfDays}
-        onEventPress={onEventPress}
-        locale="en"
-        timeStep={60}
-        styles={timetableStyles}
-      />
+        <ScrollView>
+          <TimeTableView
+            events={events}
+            pivotTime={9}
+            pivotEndTime={20}
+            pivotDate={genTimeBlock('mon')}
+            nDays={7}
+            onEventPress={onEventPress}
+            locale="en"
+            timeStep={60}
+            styles={timetableStyles}
+          />
+        </ScrollView>
 
-
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={handleMain}>
-          <Ionicons name="calendar" size={24} color="white" />
-          <Text style={styles.navText}>Schedule</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={handleReview}>
-          <Ionicons name="search" size={24} color="white" />
-          <Text style={styles.navText}>Post</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={handleReview}>
-          <Ionicons name="chatbubble" size={24} color="white" />
-          <Text style={styles.navText}>Review</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={handleAccount}>
-          <Ionicons name="book" size={24} color="white" />
-          <Text style={styles.navText}>Resume</Text>
+        <View style={styles.bottomNav}>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Main')}>
+            <Ionicons name="calendar" size={24} color="white" />
+            <Text style={styles.navText}>Schedule</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
+            <Ionicons name="search" size={24} color="white" />
+            <Text style={styles.navText}>Post</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
+            <Ionicons name="chatbubble" size={24} color="white" />
+            <Text style={styles.navText}>Review</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Resume')}>
+            <Ionicons name="book" size={24} color="white" />
+            <Text style={styles.navText}>Resume</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity style={styles.fab}>
+          <Ionicons name="share" size={24} color="white" />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.fab}>
-        <Ionicons name="share" size={24} color="white" />
-      </TouchableOpacity>
-    </View>
     </TouchableWithoutFeedback>
   );
 };
@@ -373,13 +475,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    height: 110,
+    height: '13%',
     backgroundColor: '#7B68EE',
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingTop: 40,
+    paddingTop: 35,
   },
   headerText: {
     color: 'white',
@@ -399,7 +501,8 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 4,
+    paddingleft: 4,
   },
   customHeaderContainer: {
     flexDirection: 'row',
@@ -431,6 +534,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#00aaff',
     borderRadius: 2,
     marginTop: 4,
+  },
+  selectedDayText: {
+    fontWeight: 'bold',
+    color: '#7B68EE', // 보라색으로 표시
+  },
+  selectedDateText: {
+    color: '#7B68EE', // 보라색으로 표시
   },
   progressContainer: {
     padding: 8,
@@ -508,17 +618,20 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#7B68EE',
-    flexDirection: 'row',
+    color: '#7B68EE'
   },
   close: {
-    marginTop: -45,
-    marginLeft: 270,
+    marginTop: '-19%',
+    marginLeft: '88%',
 
   },
   modalText: {
+    fontSize: 14,
+    marginVertical: 6,
+  },
+  modalItemText: {
     fontSize: 16,
-    marginVertical: 10,
+    padding: 10,
   },
   input: {
     borderWidth: 1,

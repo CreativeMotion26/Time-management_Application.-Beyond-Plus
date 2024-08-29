@@ -1,18 +1,53 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Button, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
+import { Linking } from 'react-native';
 
 const Login = () => {
   const navigation = useNavigation();
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    navigation.navigate('Main');
+    setShowLoginForm(!showLoginForm);
   };
 
   const handleSignIn = () => {
     navigation.navigate('SignIn');
+  };
+
+  const google = () =>{
+    const url = 'http://localhost:3000/auth/google';
+    Linking.openURL(url);
+    navigation.navigate('Main');
+  };
+
+
+  // const google = async () => {
+  //   try {
+  //     // 서버에서 Google OAuth URL을 가져오는 API 호출
+  //     const response = await fetch('http://localhost:3000/auth/google');
+  //     const { authUrl } = await response.json();
+      
+  //     // 브라우저에서 Google OAuth 페이지 열기
+  //     Linking.openURL(authUrl);
+  //   } catch (error) {
+  //     console.error('Error during OAuth redirection:', error);
+  //   }
+  // };
+
+  const handleSubmit = () => {
+    if (email && password) {
+      Alert.alert('Login', 'Logged in successfully!');
+      setShowLoginForm(false); // Hide the form after successful login
+      // Optionally navigate to the main screen
+      navigation.navigate('Main');
+    } else {
+      Alert.alert('Error', 'Please enter both email and password.');
+    }
   };
 
   return (
@@ -26,18 +61,45 @@ const Login = () => {
           style={styles.logo}
         />
       </View>
+      
+      {/* Login with BEYOND⁺ button */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <FontAwesome name="home" size={24} color="white" />
         <Text style={styles.buttonText}>Login with BEYOND⁺</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+
+      {showLoginForm && (
+        <View style={styles.loginForm}>
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={(text) => setEmail(text)}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+            secureTextEntry
+            style={styles.input}
+          />
+          <View style={styles.submitButton}>
+            <Button title="Log in" onPress={handleSubmit} />
+          </View>
+        </View>
+      )}
+
+      {/* Other login options */}
+      <TouchableOpacity style={styles.button} onPress={google}>
         <FontAwesome name="google" size={24} color="white" />
-        <Text style={styles.buttonText}>Login with Google  </Text>
+        <Text style={styles.buttonText}>Login with Google</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+      <TouchableOpacity style={styles.button} onPress={() => Alert.alert('Login with Apple')}>
         <AntDesign name="apple1" size={24} color="white" />
-        <Text style={styles.buttonText}>Login with Apple   </Text>
+        <Text style={styles.buttonText}>Login with Apple</Text>
       </TouchableOpacity>
+
+      {/* Sign in button */}
       <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
         <Text style={styles.signInText}>Sign in</Text>
       </TouchableOpacity>
@@ -59,15 +121,6 @@ const styles = StyleSheet.create({
     width: 180,
     height: 110,
     marginBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'white',
   },
   button: {
     flexDirection: 'row',
@@ -92,6 +145,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'white',
     textDecorationLine: 'underline',
+  },
+  loginForm: {
+    width: '80%',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 20,
+    borderRadius: 8,
+    marginVertical: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: 'white',
+  },
+  submitButton: {
+    marginTop: 10,
   },
 });
 
