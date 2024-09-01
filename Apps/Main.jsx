@@ -410,8 +410,7 @@ const ScheduleScreen = () => {
           selectedDay={selectedDay} 
           onDayPress={handleDayPress}
         />
-        <ScrollView>
-          <TimeTableView
+        <TimeTableView
             events={events}
             pivotTime={9}
             pivotEndTime={20}
@@ -421,8 +420,7 @@ const ScheduleScreen = () => {
             locale="en"
             timeStep={60}
             styles={timetableStyles}
-          />
-        </ScrollView>
+        />
 
         <View style={styles.bottomNav}>
           <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Main')}>
@@ -436,10 +434,6 @@ const ScheduleScreen = () => {
           <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
             <Ionicons name="chatbubble" size={24} color="white" />
             <Text style={styles.navText}>Review</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Resume')}>
-            <Ionicons name="book" size={24} color="white" />
-            <Text style={styles.navText}>Resume</Text>
           </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.fab}>

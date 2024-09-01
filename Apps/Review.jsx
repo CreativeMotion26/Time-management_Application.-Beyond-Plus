@@ -41,16 +41,6 @@ const Review = () => {
   const navigation = useNavigation();
 
 
-  const handleReview = () => {
-    navigation.navigate('Review');
-  };
-  const handleMain = () => {
-    navigation.navigate('Main');
-  };
-  const handleAccount = () => {
-    navigation.navigate('Account');
-  };
-
   const handlePost = () => {
     navigation.navigate('Post', {
       addPost: addPost,
@@ -85,7 +75,12 @@ const Review = () => {
         >
           <View style={styles.headerTop}>
             <Text style={styles.headerText}>BEYOND⁺</Text>
+            <View style={styles.headerTop}>
             <Ionicons name="notifications-outline" size={24} color="white" />
+            <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
+              <Ionicons name="person" size={24} color="white" />
+            </TouchableOpacity>
+            </View>
           </View>
           <TextInput
             style={styles.searchBar}
@@ -168,10 +163,6 @@ const Review = () => {
           <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
             <Ionicons name="chatbubble" size={24} color="white" />
             <Text style={styles.navText}>Review</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Resume')}>
-            <Ionicons name="book" size={24} color="white" />
-            <Text style={styles.navText}>Resume</Text>
           </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.fab}>

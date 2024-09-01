@@ -4,12 +4,15 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { Linking } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = () => {
   const navigation = useNavigation();
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  
 
   const handleLogin = () => {
     setShowLoginForm(!showLoginForm);
@@ -19,12 +22,39 @@ const Login = () => {
     navigation.navigate('SignIn');
   };
 
+  //구글 OAuth 모바일과 서버 사이 
   const google = () =>{
     const url = 'http://localhost:3000/auth/google';
     Linking.openURL(url);
     navigation.navigate('Main');
   };
 
+  // const AuthScreen = ({ navigation }) => {
+
+  //   useEffect(() => {
+  //     const handleUrl = async (event) => {
+  //       const { url } = event;
+  //       console.log('Received URL:', url);
+  
+  //       if (url.startsWith('myapp://auth')) {
+  //         const accessToken = new URL(url).searchParams.get('access_token');
+  //         const refreshToken = new URL(url).searchParams.get('refresh_token');
+          
+  //         await AsyncStorage.setItem('accessToken', accessToken);
+  //         await AsyncStorage.setItem('refreshToken', refreshToken);
+  
+  //         navigation.navigate('Home');
+  //       }
+  //     };
+  
+    //   // URL 리스너 설정
+    //   Linking.addEventListener('url', handleUrl);
+  
+    //   // 리스너 해제
+    //   return () => {
+    //     Linking.removeEventListener('url', handleUrl);
+    //   };
+    // }, []);
 
   // const google = async () => {
   //   try {

@@ -39,11 +39,6 @@ const PostDetails = ({ route }) => {
         </View>
       </LinearGradient>
 
-      <ScrollView>
-      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <Ionicons name="arrow-back" size={24} color="black" />
-      </TouchableOpacity>
-
       <View style={styles.content}>
         <View style={styles.profileHead}>
           <Image source={{ uri: post.image || 'https://via.placeholder.com/150' }} style={styles.profileImage} />
@@ -97,7 +92,6 @@ const PostDetails = ({ route }) => {
           
         </View>
       </View>
-      </ScrollView>
     </View>
     
   );
@@ -131,7 +125,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    marginTop: -35,
   },
   profileHead: {
     flexDirection: 'row',
