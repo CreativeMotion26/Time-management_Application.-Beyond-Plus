@@ -8,7 +8,7 @@ const Account = () => {
   const navigation = useNavigation();
 
   const handleActivity = () => {
-    navigation.navigate('Activity');
+    navigation.navigate('Resume');
   };
 
   const handleSettings = () => {
@@ -78,27 +78,7 @@ const Account = () => {
       </ScrollView>
       </View>
 
-      <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Main')}>
-            <Ionicons name="calendar" size={24} color="white" />
-            <Text style={styles.navText}>Schedule</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
-            <Ionicons name="search" size={24} color="white" />
-            <Text style={styles.navText}>Post</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
-            <Ionicons name="chatbubble" size={24} color="white" />
-            <Text style={styles.navText}>Review</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Resume')}>
-            <Ionicons name="book" size={24} color="white" />
-            <Text style={styles.navText}>Resume</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.fab}>
-          <Ionicons name="share" size={24} color="white" />
-        </TouchableOpacity>
+      
       </View>
   );
 };

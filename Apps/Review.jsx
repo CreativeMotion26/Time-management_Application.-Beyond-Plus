@@ -165,7 +165,7 @@ const Review = () => {
             <Text style={styles.navText}>Review</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.fab}>
+        <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('Post')}>
           <Ionicons name="share" size={24} color="white" />
         </TouchableOpacity>
       </View>

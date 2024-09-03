@@ -218,28 +218,6 @@ const Resume = () => {
           </View>
         ))}
       </ScrollView>
-
-      <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Main')}>
-            <Ionicons name="calendar" size={24} color="white" />
-            <Text style={styles.navText}>Schedule</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
-            <Ionicons name="search" size={24} color="white" />
-            <Text style={styles.navText}>Post</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
-            <Ionicons name="chatbubble" size={24} color="white" />
-            <Text style={styles.navText}>Review</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Resume')}>
-            <Ionicons name="book" size={24} color="white" />
-            <Text style={styles.navText}>Resume</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.fab}>
-          <Ionicons name="share" size={24} color="white" />
-        </TouchableOpacity>
       </View>
   );
 };
@@ -353,31 +331,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 60,
-    backgroundColor: '#9986FF',
-    borderRadius: 30,
-    position: 'absolute',
-    left: 24,
-    right: 24,
-    bottom: 20,
-    shadowColor: '#171717',
-    shadowOffset: { width: -2, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    
-  },
-  navItem: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  navText: {
-    color: 'white',
-    fontSize: 12,
   },
   modalContainer: {
     flex: 1,
