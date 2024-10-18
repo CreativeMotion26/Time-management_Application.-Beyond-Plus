@@ -13,11 +13,45 @@ import Settings from './Apps/Accounts/Settings'
 import Resume from './Apps/Resume'
 import Post from './Apps/Post'
 import PostDetails from './Apps/PostDetails';
+import Community from './Apps/Community';
+import { useEffect } from 'react';
 
 
 const Stack = createStackNavigator();
 
 const App = () => {
+  const checkAutoLogin = async () => {
+    const token = await EncryptedStorage.getItem('access_token');
+  
+    if (token) {
+      try {
+        const response = await fetch('http://localhost:3000/login/verify-token', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+  
+        if (response.ok) {
+          navigation.navigate('Main'); // If token is valid, skip login
+        } else {
+          navigation.navigate('Login'); // If token is invalid, show login
+        }
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        navigation.navigate('Login'); // Show login on error
+      }
+    } else {
+      navigation.navigate('Login'); // No token, show login
+    }
+  };
+  
+  useEffect(() => {
+    checkAutoLogin();
+  }, []);
+  
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
@@ -54,6 +88,11 @@ const App = () => {
         <Stack.Screen 
           name="PostDetails" 
           component={PostDetails}
+          options={{ headerShown: false }}  
+         />
+         <Stack.Screen 
+          name="Community" 
+          component={Community}
           options={{ headerShown: false }}  
          />
         <Stack.Screen name="Activity" component={Activity} />

@@ -19,10 +19,12 @@ const Account = () => {
     navigation.navigate('Help');
   };
 
-  const handleLogout = () => {
+
+  const handleLogout = async () => {
+    await EncryptedStorage.removeItem('access_token');
     navigation.navigate('Login');
   };
-
+  
 
   return (
     <View style={styles.container}>

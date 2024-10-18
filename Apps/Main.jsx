@@ -427,7 +427,7 @@ const ScheduleScreen = () => {
             <Ionicons name="calendar" size={24} color="white" />
             <Text style={styles.navText}>Schedule</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Review')}>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Community')}>
             <Ionicons name="search" size={24} color="white" />
             <Text style={styles.navText}>Post</Text>
           </TouchableOpacity>

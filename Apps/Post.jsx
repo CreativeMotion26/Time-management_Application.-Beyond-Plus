@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Image, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Alert, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Image, Button } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 
@@ -22,7 +22,7 @@ const Post = ({ route }) => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newPost = {
       id: Date.now(),
       title: title, // This could be dynamic if you want users to add a title
@@ -32,8 +32,34 @@ const Post = ({ route }) => {
       rating: 0, // Initially 0 or you can allow the user to add a rating
       image: image,
     };
-    route.params.addPost(newPost);
-    navigation.navigate('Review');
+
+    try {
+      const response = await fetch('http://localhost:3000/posts/contents', {
+        method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ newPost}) // Adjust according to your server's requirements
+        });
+      const data = await response.text();
+      // const header = await response.headers();
+      // const data = await response.json();
+      // console.log(header);
+      if (response.ok) {
+        Alert.alert('Verification Success', 'You have been successfully logged in!');
+        route.params.addPost(newPost);
+        navigation.navigate('Review');
+      } else {
+        // Alert.alert('Verification Error', data.message || 'Invalid verification code, please try again.');
+        Alert.alert('Invalid verification code, please try again.');
+
+      }
+    } catch (error) {
+      console.error('Error verifying code:', error);
+      Alert.alert('Error', 'Failed to connect to the server');
+    }
+   
+    
   };
 
   return (

@@ -8,27 +8,74 @@ import { LinearGradient } from 'expo-linear-gradient';
 const Login = () => {
   const navigation = useNavigation();
   const [emailPrefix, setEmailPrefix] = useState('');
-  const [code, setCode] = useState(new Array(6).fill('')); // An array to hold each digit of the code
+  const [code, setCode] = useState(new Array(6).fill(''));
   const [codeSent, setCodeSent] = useState(false);
   const inputs = useRef([]);
 
-  const sendVerificationCode = () => {
+  const sendVerificationCode = async () => {
     if (emailPrefix) {
       const email = `${emailPrefix}@student.uts.edu.au`;
-      console.log('Sending verification code to:', email);
-      setCodeSent(true);
-      Alert.alert('Verification', 'A verification code has been sent to your email.');
+      try {
+        const response = await fetch('http://localhost:3000/login/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email }) // Adjust according to your server's requirements
+        });
+  
+        const responseText = await response.text(); // Read the response text and store it
+        try {
+          const data = JSON.parse(responseText); // Try parsing the stored response text
+          if (response.ok) {
+            setCodeSent(true);
+            Alert.alert('Verification', 'A verification code has been sent to your email.');
+          } else {
+            Alert.alert('Error', data.message || 'Failed to send verification code');
+          }
+        } catch (jsonError) {
+          console.error('Failed to parse JSON from response:', responseText);
+          Alert.alert('Error', 'Server response was not in JSON format');
+        }
+      } catch (error) {
+        console.error('Error sending verification code:', error);
+        Alert.alert('Error', 'Failed to connect to the server');
+      }
     } else {
       Alert.alert('Invalid Email', 'Please enter your student ID before the domain.');
     }
   };
+  
+  
 
-  const verifyCode = () => {
-    if (code.join('') === '123456') { // Replace '123456' with your actual verification logic
-      Alert.alert('Verification Success', 'You have been successfully logged in!');
-      navigation.navigate('Main');
-    } else {
-      Alert.alert('Verification Error', 'Invalid verification code, please try again.');
+  const verifyCode = async () => {
+    const email = `${emailPrefix}@student.uts.edu.au`;
+    const verificationCode = code.join('');
+    const password = "1234";
+    console.log(verificationCode);
+    try {
+      const response = await fetch('http://localhost:3000/login/verify', {
+        method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, verificationCode,password }) // Adjust according to your server's requirements
+        });
+      const data = await response.text();
+      // const header = await response.headers();
+      // const data = await response.json();
+      // console.log(header);
+      if (response.ok) {
+        Alert.alert('Verification Success', 'You have been successfully logged in!');
+        navigation.navigate('Main');
+      } else {
+        // Alert.alert('Verification Error', data.message || 'Invalid verification code, please try again.');
+        Alert.alert('Invalid verification code, please try again.');
+
+      }
+    } catch (error) {
+      console.error('Error verifying code:', error);
+      Alert.alert('Error', 'Failed to connect to the server');
     }
   };
 
@@ -39,6 +86,10 @@ const Login = () => {
     }
   };
 
+  const main =() =>{
+    navigation.navigate('Main');
+  };
+  
   return (
     <LinearGradient
       colors={['#2b189e', '#5d4add', '#a38ef9']}
@@ -88,7 +139,11 @@ const Login = () => {
           </TouchableOpacity>
         </>
       )}
+      <TouchableOpacity style={styles.button} onPress={main}>
+            <Text style={styles.buttonText}>Test login</Text>
+          </TouchableOpacity>
     </LinearGradient>
+    
   );
 };
 
